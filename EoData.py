@@ -18,6 +18,17 @@ def readEO(path):
 
     return eo
 
+def read_eo_2(path):
+    eo_line = np.genfromtxt(path, delimiter='\t',
+                            dtype={'names': ('Longitude', 'Latitude', 'Height', 'Roll', 'Pitch', 'Yaw'),
+                                   'formats': ('<f8', '<f8', '<f8', '<f8', '<f8', '<f8')})
+
+    eo = [float(eo_line['Longitude']), float(eo_line['Latitude']), float(eo_line['Height']),
+          float(eo_line['Roll']), float(eo_line['Pitch']), float(eo_line['Yaw'])]
+    print(eo)
+
+    return eo
+
 def readEOfromMetadata(path):
     metadata = pyexiv2.ImageMetadata(path)
     metadata.read()

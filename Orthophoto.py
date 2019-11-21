@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 import time
 from ExifData import getMetadataExiv2
-from EoData import readEO, convertCoordinateSystem, Rot3D
+from EoData import read_eo_2, convertCoordinateSystem, Rot3D
 from Boundary import boundary
 from BackprojectionResample import projectedCoord, backProjection, resample, createGeoTiff
 from system_calibration import calibrate
@@ -18,7 +18,7 @@ if __name__ == '__main__':
          [-0.135993334134149, 0.989711806459606, 0.0444561944563446],
          [-0.0121505910810649, -0.0465359159242159, 0.998842716179817]], dtype=float)
 
-    dst_path = '/internalCompany/PM2019007_nifs/DKC/gomso_stacks_orthophoto/'
+    dst_path = '/internalCompany/PM2019007_nifs/DKC/gomso_thumbnails_orthophoto/'
     file_list = []
 
     # for root, dirs, files in os.walk('./tests/yeosu_stacks'):
@@ -32,7 +32,7 @@ if __name__ == '__main__':
             extension = os.path.splitext(file)[1]
             file_path = root + '/' + file
 
-            if extension == '.JPG':
+            if extension == '.JPG' or extension == '.jpg':
                 print('Read the image - ' + file)
                 image = cv2.imread(file_path, -1)
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
             elif extension == '.txt':
                 print('Read EOP - ' + file)
-                eo = readEO(file_path)
+                eo = read_eo_2(file_path)
                 eo = convertCoordinateSystem(eo)
 
                 # System Calibration
@@ -97,7 +97,7 @@ if __name__ == '__main__':
                 # 8. Create GeoTiff
                 print('Save the image in GeoTiff')
                 start_time = time.time()
-                dst = './' + filename
+                dst = dst_path + filename
                 createGeoTiff(b, g, r, a, bbox, gsd, boundary_rows, boundary_cols, dst)
                 print("--- %s seconds ---" % (time.time() - start_time))
 

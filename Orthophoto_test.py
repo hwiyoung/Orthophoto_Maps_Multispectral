@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 import time
 from ExifData import getMetadataExiv2
-from EoData import read_eo_2, convertCoordinateSystem, Rot3D
+from EoData import readEOfromMetadata, convertCoordinateSystem, Rot3D
 from Boundary import boundary
 from BackprojectionResample import projectedCoord, backProjection, resample, createGeoTiff
 from system_calibration import calibrate
@@ -18,11 +18,12 @@ if __name__ == '__main__':
          [-0.135993334134149, 0.989711806459606, 0.0444561944563446],
          [-0.0121505910810649, -0.0465359159242159, 0.998842716179817]], dtype=float)
 
-    dst_path = '/internalCompany/PM2019007_nifs/DKC/gomso_thumbnails_orthophoto/'
+    # dst_path = '/internalCompany/PM2019007_nifs/DKC/gomso_thumbnails_orthophoto/'
+    dst_path = '/internalCompany/PM2019007_nifs/DKC/gomso_1024_1025/orthophoto/'
     file_list = []
 
-    # for root, dirs, files in os.walk('./tests/yeosu_stacks'):
-    for root, dirs, files in os.walk('/internalCompany/PM2019007_nifs/DKC/gomso_thumbnails'):
+    # for root, dirs, files in os.walk('/internalCompany/PM2019007_nifs/DKC/gomso_thumbnails'):
+    for root, dirs, files in os.walk('/internalCompany/PM2019007_nifs/DKC/gomso_1024_1025'):
         files.sort()
         for file in files:
             image_start_time = time.time()
@@ -50,9 +51,9 @@ if __name__ == '__main__':
 
                 read_time = end_time - start_time
 
-            elif extension == '.txt':
                 print('Read EOP - ' + file)
-                eo = read_eo_2(file_path)
+                # eo = read_eo_2(file_path)
+                eo = readEOfromMetadata(file_path)
                 eo = convertCoordinateSystem(eo)
 
                 # System Calibration

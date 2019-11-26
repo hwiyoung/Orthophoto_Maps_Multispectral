@@ -19,6 +19,6 @@
 # limitations under the License.
 #
 
-. /home/innopam-ldm/PycharmProjects/Orthophoto_Maps_multiSpectral/OTB-7.0.0-Linux64/otbenv.profile
+. /home/innopam-ldm/Downloads/OTB-7.0.0-Linux64/otbenv.profile
 
-/home/innopam-ldm/PycharmProjects/Orthophoto_Maps_multiSpectral/OTB-7.0.0-Linux64/bin/mapla "$@"
+/home/innopam-ldm/Downloads/OTB-7.0.0-Linux64/bin/mapla "$@"

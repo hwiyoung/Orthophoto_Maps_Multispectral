@@ -39,28 +39,28 @@ cat_path()
 # So if you run again from a terminal. you need to run the script again
 # see how this is sourced in monteverdi.sh and mapla.sh
 
-CMAKE_PREFIX_PATH=/home/innopam-ldm/PycharmProjects/Orthophoto_Maps_multiSpectral/OTB-7.0.0-Linux64
+CMAKE_PREFIX_PATH=/home/innopam-ldm/Downloads/OTB-7.0.0-Linux64
 export CMAKE_PREFIX_PATH
 
 # check and set OTB_APPLICATION_PATH
-OTB_APPLICATION_PATH=$(cat_path "/home/innopam-ldm/PycharmProjects/Orthophoto_Maps_multiSpectral/OTB-7.0.0-Linux64/lib/otb/applications" "$OTB_APPLICATION_PATH")
+OTB_APPLICATION_PATH=$(cat_path "/home/innopam-ldm/Downloads/OTB-7.0.0-Linux64/lib/otb/applications" "$OTB_APPLICATION_PATH")
 
 # Add bin direcotory to system PATH
-PATH=$(cat_path "/home/innopam-ldm/PycharmProjects/Orthophoto_Maps_multiSpectral/OTB-7.0.0-Linux64/bin" "$PATH")
+PATH=$(cat_path "/home/innopam-ldm/Downloads/OTB-7.0.0-Linux64/bin" "$PATH")
 
 # export PYTHONPATH to import otbApplication.py
-PYTHONPATH=$(cat_path "/home/innopam-ldm/PycharmProjects/Orthophoto_Maps_multiSpectral/OTB-7.0.0-Linux64/lib/python" "$PYTHONPATH")
+PYTHONPATH=$(cat_path "/home/innopam-ldm/Downloads/OTB-7.0.0-Linux64/lib/python" "$PYTHONPATH")
 
 # set numeric locale to C
 LC_NUMERIC=C
 
 # set GDAL_DATA variable used by otb application
-GDAL_DATA=/home/innopam-ldm/PycharmProjects/Orthophoto_Maps_multiSpectral/OTB-7.0.0-Linux64/share/gdal
+GDAL_DATA=/home/innopam-ldm/Downloads/OTB-7.0.0-Linux64/share/gdal
 
 export GDAL_DRIVER_PATH=disable
 
 # set GEOTIFF_CSV variable used by otb application
-GEOTIFF_CSV=/home/innopam-ldm/PycharmProjects/Orthophoto_Maps_multiSpectral/OTB-7.0.0-Linux64/share/epsg_csv
+GEOTIFF_CSV=/home/innopam-ldm/Downloads/OTB-7.0.0-Linux64/share/epsg_csv
 
 # export variables
 export LC_NUMERIC

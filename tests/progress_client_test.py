@@ -37,5 +37,5 @@ class Broadcaster:
 
 progressbc = Broadcaster(PROGRESS_BROADCAST_PORT)
 progressbc.set_project_name("orthophoto_test")
-progressbc.send_update(100)
+progressbc.send_update(20.2)
 print("Sent!")

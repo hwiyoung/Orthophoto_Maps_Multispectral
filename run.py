@@ -4,13 +4,22 @@ import os
 import numpy as np
 import cv2
 import time
-from ExifData import getMetadataExiv2
-from EoData import readEOfromMetadata, convertCoordinateSystem, Rot3D
+from EoData import read_eo, convertCoordinateSystem, Rot3D
 from Boundary import boundary
 from BackprojectionResample import projectedCoord, backProjection, resample, createGeoTiff
 from system_calibration import calibrate
 import subprocess
+from progress import Broadcaster
+import socket
 
+
+PROGRESS_BROADCAST_PORT = 6367 #ODMR
+try:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+except:
+    print("Cannot create UDP socket, progress reporting will be disabled.")
+    sock = None
+progressbc = Broadcaster(PROGRESS_BROADCAST_PORT)
 
 def main():
     parser = argparse.ArgumentParser(description='This code is written for practice about argparse')
@@ -20,13 +29,22 @@ def main():
 
     project_path = args.project_path
     project_name = args.project_name
+
+    ########## Settings for showing progress ##########
+    progressbc.set_project_name(project_name)
+
+    ########## Run the processing function ##########
     rectify(project_path, project_name)
 
 
 def rectify(path, name):
     print(path, name)
 
-    ground_height = 0  # unit: m
+    ground_height = 0               # unit: m
+    height_threshold = 100          # unit: m
+    focal_length = 5 / 1000         # unit: m
+    pixel_size = 0.00375 / 1000     # unit: m/px
+
     # 190911
     R_CB = np.array(
         [[0.990635238726878, 0.135295782209043, 0.0183541578119133],
@@ -44,10 +62,9 @@ def rectify(path, name):
     file_list = []
     for root, dirs, files in os.walk(path + "/" + name + '/images'):
         files.sort()
+        count = 0
+        len_files = len(files)
         for file in files:
-            image_start_time = time.time()
-            start_time = time.time()
-
             filename = os.path.splitext(file)[0]
             extension = os.path.splitext(file)[1]
             file_path = root + '/' + file
@@ -56,40 +73,28 @@ def rectify(path, name):
                 print('Read the image - ' + file)
                 image = cv2.imread(file_path, -1)
 
-                # 1. Extract metadata from the image
-                focal_length, sensor_width = getMetadataExiv2(file_path)  # unit: m, mm
-                # pixel_size = sensor_width / image_cols  # unit: mm/px
-                pixel_size = 0.00375  # unit: mm/px
-                pixel_size = pixel_size / 1000  # unit: m/px
-
-                image_rows = image.shape[0]
-                image_cols = image.shape[1]
-
-                end_time = time.time()
-                print("--- %s seconds ---" % (time.time() - start_time))
-
-                read_time = end_time - start_time
-
+            elif extension == '.txt':
                 print('Read EOP - ' + file)
-                eo = readEOfromMetadata(file_path)
+                eo = read_eo(file_path, 3)
                 eo = convertCoordinateSystem(eo)
-                print(eo)
+
+                if eo[2] - ground_height <= height_threshold:
+                    print("The height of the image is too low: ", eo[2] - ground_height, " m")
+                    return "The height of the image is too low"
 
                 # System Calibration
                 OPK = calibrate(eo[3], eo[4], eo[5], R_CB)
                 eo[3:] = OPK
-
-                # if abs(OPK[0]) > 30*(np.pi/180) or abs(OPK[1]) > 30*(np.pi/180):
-                #     print('Too much omega/phi will kill you')
-                #     continue
-
-                print('Easting | Northing | Altitude | Omega | Phi | Kappa')
                 print(eo)
+
+                if abs(OPK[0]) > 30*(np.pi/180) or abs(OPK[1]) > 30*(np.pi/180):
+                    print('Too much omega/phi will kill you')
+                    return
+
                 R = Rot3D(eo)
 
                 # 4. Extract a projected boundary of the image
                 bbox = boundary(image, eo, R, ground_height, pixel_size, focal_length)
-                print("--- %s seconds ---" % (time.time() - start_time))
 
                 # 5. Compute GSD & Boundary size
                 # GSD
@@ -98,40 +103,31 @@ def rectify(path, name):
                 # Boundary size
                 boundary_cols = int((bbox[1, 0] - bbox[0, 0]) / gsd)
                 boundary_rows = int((bbox[3, 0] - bbox[2, 0]) / gsd)
+                print(boundary_rows, boundary_cols)
 
                 # 6. Compute coordinates of the projected boundary
-                print('projectedCoord')
-                start_time = time.time()
                 proj_coords = projectedCoord(bbox, boundary_rows, boundary_cols, gsd, eo, ground_height)
-                print("--- %s seconds ---" % (time.time() - start_time))
 
                 # Image size
                 image_size = np.reshape(image.shape[0:2], (2, 1))
 
                 # 6. Back-projection into camera coordinate system
-                print('backProjection')
-                start_time = time.time()
                 backProj_coords = backProjection(proj_coords, R, focal_length, pixel_size, image_size)
-                print("--- %s seconds ---" % (time.time() - start_time))
 
                 # 7. Resample the pixels
-                print('resample')
-                start_time = time.time()
                 b, g, r, a = resample(backProj_coords, boundary_rows, boundary_cols, image)
-                print("--- %s seconds ---" % (time.time() - start_time))
 
                 # 8. Create GeoTiff
-                print('Save the image in GeoTiff')
-                start_time = time.time()
                 dst = dst_path2 + filename
                 createGeoTiff(b, g, r, a, bbox, gsd, boundary_rows, boundary_cols, dst)
-                print("--- %s seconds ---" % (time.time() - start_time))
 
                 # file_list.append("../../" + dst + '.tif')   # in relative path
                 file_list.append(dst + '.tif')   # in absolute path
 
-                print('*** Processing time per each image')
-                print("--- %s seconds ---" % (time.time() - image_start_time + read_time))
+                count += 1
+                progressbc.send_update(count / len_files * 100 * 0.9)
+
+
 
     # 10. Mosaic individual orthophotos for each band
     working_path1 = './OTB-7.0.0-Linux64/'
@@ -155,6 +151,9 @@ def rectify(path, name):
     subprocess.call(mosaic_execution + ' -il ' + ' '.join(file_list) +
                     ' -out ' + dst_path + 'odm_orthophoto.tif', shell=True)  # in absolute path
     print("--- %s seconds ---" % (time.time() - start_time))
+
+    progressbc.send_update(100)
+    print("Sent!")
 
 
 if __name__ == "__main__":

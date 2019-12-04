@@ -3,31 +3,46 @@ import math
 from osgeo.osr import SpatialReference, CoordinateTransformation
 import pyexiv2
 
-def readEO(path):
-    eo_line = np.genfromtxt(path, delimiter='\t',
-                            dtype={'names': ('Image', 'Longitude', 'Latitude', 'Height', 'Omega', 'Phi', 'Kappa'),
-                                   'formats': ('U15', '<f8', '<f8', '<f8', '<f8', '<f8', '<f8')})
+def read_eo(path, opt):
+    if opt == 1:
+        eo_line = np.genfromtxt(path, delimiter='\t',
+                                dtype={'names': ('Image', 'Longitude', 'Latitude', 'Height', 'Omega', 'Phi', 'Kappa'),
+                                       'formats': ('U15', '<f8', '<f8', '<f8', '<f8', '<f8', '<f8')})
 
-    eo_line['Omega'] = eo_line['Omega'] * math.pi / 180
-    eo_line['Phi'] = eo_line['Phi'] * math.pi / 180
-    eo_line['Kappa'] = eo_line['Kappa'] * math.pi / 180
+        eo_line['Omega'] = eo_line['Omega'] * math.pi / 180
+        eo_line['Phi'] = eo_line['Phi'] * math.pi / 180
+        eo_line['Kappa'] = eo_line['Kappa'] * math.pi / 180
 
-    eo = [float(eo_line['Latitude']), float(eo_line['Longitude']), float(eo_line['Height']),
-          float(eo_line['Omega']), float(eo_line['Phi']), float(eo_line['Kappa'])]
-    print(eo)
+        eo = [float(eo_line['Latitude']), float(eo_line['Longitude']), float(eo_line['Height']),
+              float(eo_line['Omega']), float(eo_line['Phi']), float(eo_line['Kappa'])]
+        print(eo)
 
-    return eo
+        return eo
+    elif opt == 2:
+        eo_line = np.genfromtxt(path, delimiter='\t',
+                                dtype={'names': ('Longitude', 'Latitude', 'Height', 'Roll', 'Pitch', 'Yaw'),
+                                       'formats': ('<f8', '<f8', '<f8', '<f8', '<f8', '<f8')})
 
-def read_eo_2(path):
-    eo_line = np.genfromtxt(path, delimiter='\t',
-                            dtype={'names': ('Longitude', 'Latitude', 'Height', 'Roll', 'Pitch', 'Yaw'),
-                                   'formats': ('<f8', '<f8', '<f8', '<f8', '<f8', '<f8')})
+        eo = [float(eo_line['Longitude']), float(eo_line['Latitude']), float(eo_line['Height']),
+              float(eo_line['Roll']), float(eo_line['Pitch']), float(eo_line['Yaw'])]
+        print(eo)
 
-    eo = [float(eo_line['Longitude']), float(eo_line['Latitude']), float(eo_line['Height']),
-          float(eo_line['Roll']), float(eo_line['Pitch']), float(eo_line['Yaw'])]
-    print(eo)
+        return eo
+    elif opt == 3:
+        eo_line = np.genfromtxt(path, delimiter='\t',
+                                dtype={'names': ('Longitude', 'Latitude', 'Height', 'Roll', 'Pitch', 'Yaw'),
+                                       'formats': ('<f8', '<f8', '<f8', '<f8', '<f8', '<f8')})
 
-    return eo
+        eo_line['Roll'] = eo_line['Roll'] * math.pi / 180
+        eo_line['Pitch'] = eo_line['Pitch'] * math.pi / 180
+        eo_line['Yaw'] = eo_line['Yaw'] * math.pi / 180
+
+        eo = [float(eo_line['Longitude']), float(eo_line['Latitude']), float(eo_line['Height']),
+              float(eo_line['Roll']), float(eo_line['Pitch']), float(eo_line['Yaw'])]
+        print(eo)
+
+        return eo
+
 
 def readEOfromMetadata(path):
     metadata = pyexiv2.ImageMetadata(path)

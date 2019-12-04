@@ -11,7 +11,7 @@ import subprocess
 import gdal2tiles
 
 if __name__ == '__main__':
-    ground_height = 45  # unit: m, Chungju
+    ground_height = 0  # unit: m
 
     # 190911
     R_CB = np.array(
@@ -31,11 +31,12 @@ if __name__ == '__main__':
     #      [-0.0130299574357571, 0.926387629906560, 0.376345824163534],
     #      [-0.0452503308193368, -0.376538479145450, 0.925295186026369]], dtype=float)
 
-    dst_path = '/internalCompany/PM2019007_nifs/DKC/chungju/cj_000_thumbnails_orthophotos/'
+    dst_path = '/externalCompany/PM2019007_nifs/20191128_gohung/010_thumbnails_orthophotos/'
     # dst_path = '/internalCompany/PM2019007_nifs/DKC/gomso_1024_1025/orthophoto2/'
     file_list = []
 
-    for root, dirs, files in os.walk('/internalCompany/PM2019007_nifs/DKC/chungju/cj_000_thumbnails'):
+    total_start_time = time.time()
+    for root, dirs, files in os.walk('/externalCompany/PM2019007_nifs/20191128_gohung/010_thumbnails/'):
     # for root, dirs, files in os.walk('/internalCompany/PM2019007_nifs/DKC/gomso_1024_1025/gomso_1024_300_001_002_thumbnails'):
         files.sort()
         for file in files:
@@ -75,9 +76,9 @@ if __name__ == '__main__':
                 OPK = calibrate(eo[3], eo[4], eo[5], R_CB)
                 eo[3:] = OPK
 
-                # if abs(OPK[0]) > 30*(np.pi/180) or abs(OPK[1]) > 30*(np.pi/180):
-                #     print('Too much omega/phi will kill you')
-                #     continue
+                if abs(OPK[0]) > 30*(np.pi/180) or abs(OPK[1]) > 30*(np.pi/180):
+                    print('Too much omega/phi will kill you')
+                    continue
 
                 print('Easting | Northing | Altitude | Omega | Phi | Kappa')
                 print(eo)
@@ -146,7 +147,10 @@ if __name__ == '__main__':
                     ' -out ' + dst_path + 'IMG_RGB.tif', shell=True)
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    # 12. Generate tiles
-    options = {'zoom': (14, 21)}
-    gdal2tiles.generate_tiles(dst_path + 'IMG_RGB.tif', dst_path + '/tiles/', **options)
+    print('*** Total processing time')
+    print("--- %s seconds ---" % (time.time() - total_start_time))
+
+    # # 12. Generate tiles
+    # options = {'zoom': (14, 21)}
+    # gdal2tiles.generate_tiles(dst_path + 'IMG_RGB.tif', dst_path + '/tiles/', **options)
 

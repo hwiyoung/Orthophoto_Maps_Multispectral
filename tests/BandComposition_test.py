@@ -18,7 +18,7 @@ my_vrt = None
 ds = gdal.Translate(dstPath + '/IMG_RGB.tif', dstPath + '/IMG_RGB.vrt')
 ds = None
 
-options = {'zoom': (14, 21)}
+options = {'zoom': (14, 21), 'profile': 'mercator', 'webviewer': 'None' }
 gdal2tiles.generate_tiles(dstPath + '/IMG_RGB.tif', dstPath + '/tiles/', **options)
 
 # merge_command = ["python", "gdal2tiles", '-p', 'mercator', '-z', '14-21', '-r', 'average',

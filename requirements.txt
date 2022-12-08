@@ -1,4 +1,4 @@
-certifi==2018.8.24
+certifi==2022.12.7
 cffi==1.13.2
 future==0.18.2
 GDAL==2.2.4
